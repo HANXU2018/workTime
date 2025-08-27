@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工时管理系统 - 优化版</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f9fafb;
+            --card: #ffffff;
+            --text: #111827;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        /* Today Module */
+        .today-module {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .today-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .today-title {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .today-time {
+            font-size: 32px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .today-countdown {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .countdown-item {
+            text-align: center;
+        }
+
+        .countdown-value {
+            font-size: 28px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .countdown-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .today-progress {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-bg {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .config-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .config-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .config-input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .config-input:focus {
+            outline: 2px solid var(--primary-light);
+            outline-offset: -1px;
+            border-color: var(--primary);
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-value.success { color: var(--success); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.danger { color: var(--danger); }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .stat-progress {
+            margin-top: 12px;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stat-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .stat-bar.success { background: var(--success); }
+        .stat-bar.warning { background: var(--warning); }
+        .stat-bar.danger { background: var(--danger); }
+
+        /* Main Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 650px 1fr;
+            gap: 24px;
+        }
+
+        /* Week Panel */
+        .week-panel {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .week-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .days-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .day-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+
+        .day-item:hover {
+            border-color: var(--primary-light);
+            transform: translateX(4px);
+        }
+
+        .day-item.success { 
+            background: linear-gradient(to right, rgba(16, 185, 129, 0.05), transparent);
+            border-color: var(--success); 
+        }
+        .day-item.warning { 
+            background: linear-gradient(to right, rgba(245, 158, 11, 0.05), transparent);
+            border-color: var(--warning); 
+        }
+        .day-item.danger { 
+            background: linear-gradient(to right, rgba(239, 68, 68, 0.05), transparent);
+            border-color: var(--danger); 
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .day-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .day-hours {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .day-hours.success { color: var(--success); }
+        .day-hours.warning { color: var(--warning); }
+        .day-hours.danger { color: var(--danger); }
+
+        /* Enhanced Time Input */
+        .time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .time-group {
+            position: relative;
+        }
+
+        .time-label {
+            position: absolute;
+            top: -8px;
+            left: 10px;
+            background: var(--bg);
+            padding: 0 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .time-input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            background: var(--card);
+        }
+
+        .time-input-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .time-input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            background: transparent;
+        }
+
+        .time-input:focus {
+            outline: none;
+        }
+
+        .time-buttons {
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border);
+        }
+
+        .time-btn {
+            padding: 4px 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .time-btn:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .time-btn:first-child {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .next-day-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .next-day-toggle:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .next-day-toggle.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Right Panels Container */
+        .right-panels {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: fit-content;
+        }
+
+        /* Remaining Days Panel */
+        .remaining-panel {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Chart Panel */
+        .chart-panel {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-container {
+            height: 150px;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            padding: 10px 0;
+        }
+
+        .chart-bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .chart-bars {
+            width: 100%;
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            position: relative;
+        }
+
+        .chart-bar {
+            flex: 1;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            min-height: 2px;
+        }
+
+        .chart-bar.actual {
+            background: var(--primary);
+        }
+
+        .chart-bar.target {
+            background: var(--border);
+            opacity: 0.5;
+        }
+
+        .chart-bar:hover::after {
+            content: attr(data-hours);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .chart-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* Clear button for days */
+        .day-clear-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: var(--bg);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .day-item:hover .day-clear-btn {
+            display: flex;
+        }
+
+        .day-clear-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* File input styling */
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .file-label:hover {
+            background: var(--card);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Overtime Panel */
+        .overtime-panel {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .overtime-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .salary-input-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .salary-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .salary-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .salary-input {
+            flex: 1;
+            max-width: 150px;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .salary-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .salary-input:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Slider Styles */
+        .slider-group {
+            margin-top: 12px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .slider-label {
+            font-size: 14px;
+            opacity: 0.9;
+            min-width: 60px;
+        }
+
+        .slider-input {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+
+        .slider-input::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .slider-input::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+
+        .slider-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .overtime-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .overtime-stat {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .overtime-stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .overtime-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .overtime-stat-money {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .overtime-breakdown {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .breakdown-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .breakdown-value {
+            font-weight: 600;
+        }
+
+        .overtime-warning {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid white;
+            padding: 12px;
+            margin-top: 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .remaining-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remaining-summary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .remaining-big-number {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .remaining-text {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .remaining-days-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .remaining-day {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remaining-day-name {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .remaining-day-info {
+            text-align: right;
+        }
+
+        .remaining-day-hours {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .remaining-day-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Action Buttons */
+        .actions {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--card);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .overtime-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .config-row {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .overtime-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .salary-input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .salary-input {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Today Module -->
+        <div class="today-module" id="todayModule" style="display: none;">
+            <div class="today-info">
+                <div class="today-title">今日工作状态</div>
+                <div class="today-time" id="currentTime">--:--</div>
+            </div>
+            <div class="today-countdown">
+                <div class="countdown-item">
+                    <span class="countdown-value" id="countdownHours">--</span>
+                    <span class="countdown-label">小时</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-value" id="countdownMinutes">--</span>
+                    <span class="countdown-label">分钟</span>
+                </div>
+            </div>
+            <div class="today-progress">
+                <div class="progress-label">今日进度 <span id="todayPercent">0%</span></div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="todayProgressBar" style="width: 0%"></div>
+                </div>
+                <div class="progress-label" style="margin-top: 8px;">
+                    预计 <span id="expectedEndTime">--:--</span> 下班
+                </div>
+            </div>
+        </div>
+
+        <!-- Header with Config -->
+        <div class="header">
+            <div class="header-content">
+                <h1 class="title">⏱ 工时管理系统</h1>
+                <div class="config-row">
+                    <div class="config-item">
+                        <label class="config-label">日目标</label>
+                        <input type="number" class="config-input" id="dailyTarget" value="11.5" step="0.5" onchange="updateConfig()">
+                        <span class="config-label">小时</span>
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">周目标</label>
+                        <input type="number" class="config-input" id="weeklyTarget" value="57.5" step="0.5" onchange="updateConfig()">
+                        <span class="config-label">小时</span>
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">默认上班</label>
+                        <input type="text" class="config-input" id="defaultStart" value="10:00" style="width: 60px" onchange="updateConfig()">
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">默认下班</label>
+                        <input type="text" class="config-input" id="defaultEnd" value="22:00" style="width: 60px" onchange="updateConfig()">
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">工作模式</label>
+                        <select class="config-input" id="workMode" style="width: 100px" onchange="updateConfig()">
+                            <option value="normal">标准5天</option>
+                            <option value="alternate">大小周</option>
+                            <option value="sixdays">每周6天</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value" id="totalHours">0</div>
+                <div class="stat-label">本周已完成</div>
+                <div class="stat-progress">
+                    <div class="stat-bar" id="totalProgress"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="remainingTotal">57.5</div>
+                <div class="stat-label">本周剩余</div>
+                <div class="stat-progress">
+                    <div class="stat-bar danger" id="remainingProgress" style="width: 100%"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgDaily">0</div>
+                <div class="stat-label">日均工时</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="progressPercent">0%</div>
+                <div class="stat-label">完成进度</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Left Panel Container -->
+            <div>
+                <!-- Week Panel -->
+                <div class="week-panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 class="week-header" style="margin: 0;">本周工时记录</h2>
+                        <button id="weekTypeToggle" class="btn btn-secondary" style="display: none; padding: 6px 12px; font-size: 12px;" onclick="toggleWeekType()">
+                            <span id="weekTypeText">大周</span>
+                        </button>
+                    </div>
+                    <div class="days-list" id="daysList">
+                        <!-- Days will be generated here -->
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="fillDefaults()">
+                            <span>📝</span> 填充默认
+                        </button>
+                        <button class="btn btn-secondary" onclick="optimizeRemaining()">
+                            <span>⚡</span> 优化
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearAll()">
+                            <span>🗑️</span> 清空
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportData()">
+                            <span>💾</span> 导出
+                        </button>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
+                            <label for="importFile" class="file-label btn btn-secondary" style="width: 100%; margin: 0;">
+                                <span>📂</span> 导入
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Panel (moved here) -->
+                <div class="chart-panel" style="margin-top: 20px;">
+                    <h2 class="chart-header">
+                        <span>📈</span> 工时对比图
+                    </h2>
+                    <div class="chart-container" id="chartContainer">
+                        <!-- Chart will be generated here -->
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: var(--primary)"></div>
+                            <span>实际工时</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: var(--border)"></div>
+                            <span>目标工时</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel Container -->
+            <div class="right-panels">
+                <!-- Remaining Days Panel -->
+                <div class="remaining-panel">
+                    <h2 class="remaining-header">
+                        <span>📊</span> 剩余工作日预测
+                    </h2>
+                    <div class="remaining-summary">
+                        <div class="remaining-big-number" id="remainingDaysCount">5</div>
+                        <div class="remaining-text">剩余工作日</div>
+                    </div>
+                    <div class="remaining-days-list" id="remainingDaysList">
+                        <!-- Remaining days will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Overtime Panel -->
+                <div class="overtime-panel">
+                    <h2 class="overtime-header">
+                        <span>💸</span> 加班统计 - 公司白嫖薪资
+                    </h2>
+                    
+                    <div class="salary-input-section">
+                        <div class="slider-group">
+                            <div class="slider-container">
+                                <label class="slider-label">月薪:</label>
+                                <input type="range" 
+                                       class="slider-input" 
+                                       id="salarySlider" 
+                                       min="5"
+                                       max="100"
+                                       step="1"
+                                       value="20"
+                                       oninput="updateSalaryFromSlider()">
+                                <span class="slider-value" id="salaryValue">20K</span>
+                            </div>
+                            <input type="hidden" id="monthlySalary" value="20000">
+                        </div>
+                        
+                        <div class="slider-group">
+                            <div class="slider-container">
+                                <label class="slider-label">年终:</label>
+                                <input type="range" 
+                                       class="slider-input" 
+                                       id="bonusSlider" 
+                                       min="0"
+                                       max="12"
+                                       step="0.5"
+                                       value="3"
+                                       oninput="updateBonusFromSlider()">
+                                <span class="slider-value" id="bonusValue">3月</span>
+                            </div>
+                            <input type="hidden" id="annualBonus" value="3">
+                        </div>
+                        
+                        <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button onclick="setPerformanceBonus('S')" style="padding: 4px 12px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;">
+                                S级 8月
+                            </button>
+                            <button onclick="setPerformanceBonus('A')" style="padding: 4px 12px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;">
+                                A级 6月
+                            </button>
+                            <button onclick="setPerformanceBonus('B')" style="padding: 4px 12px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;">
+                                B级 4月
+                            </button>
+                            <button onclick="setPerformanceBonus('C')" style="padding: 4px 12px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;">
+                                C级 2月
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overtime-stats">
+                        <div class="overtime-stat">
+                            <div class="overtime-stat-label">本周加班</div>
+                            <div class="overtime-stat-value" id="weeklyOvertime">0h</div>
+                            <div class="overtime-stat-money" id="weeklyOvertimeMoney">¥0</div>
+                        </div>
+                        <div class="overtime-stat">
+                            <div class="overtime-stat-label">月度预估</div>
+                            <div class="overtime-stat-value" id="monthlyOvertime">0h</div>
+                            <div class="overtime-stat-money" id="monthlyOvertimeMoney">¥0</div>
+                        </div>
+                        <div class="overtime-stat">
+                            <div class="overtime-stat-label">年度预估</div>
+                            <div class="overtime-stat-value" id="yearlyOvertime">0h</div>
+                            <div class="overtime-stat-money" id="yearlyOvertimeMoney">¥0</div>
+                        </div>
+                    </div>
+
+                    <div class="overtime-breakdown">
+                        <div class="breakdown-title">📊 详细分析</div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">标准工时 (8h/天)</span>
+                            <span class="breakdown-value" id="standardHours">40h</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">实际工时</span>
+                            <span class="breakdown-value" id="actualHours">0h</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">超时工作</span>
+                            <span class="breakdown-value" id="overtimeHours">0h</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">时薪 (按21.75天)</span>
+                            <span class="breakdown-value" id="hourlyRate">¥0/h</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">加班费率 (1.5倍)</span>
+                            <span class="breakdown-value" id="overtimeRate">¥0/h</span>
+                        </div>
+                    </div>
+
+                    <div class="overtime-breakdown" style="margin-top: 16px; background: rgba(255, 255, 255, 0.15);">
+                        <div class="breakdown-title">💰 年终奖对比</div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">年终奖金额</span>
+                            <span class="breakdown-value" id="bonusAmount">¥0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">年度欠薪</span>
+                            <span class="breakdown-value" id="yearlyOwedAmount">¥0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">折合月薪</span>
+                            <span class="breakdown-value" id="monthsOwed">0 个月</span>
+                        </div>
+                        <div class="breakdown-item" style="font-weight: 700; font-size: 16px;">
+                            <span class="breakdown-label">净收益</span>
+                            <span class="breakdown-value" id="netGain" style="font-size: 18px;">¥0</span>
+                        </div>
+                    </div>
+
+                    <div class="overtime-warning">
+                        <div id="overtimeResult" style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+                            <!-- Result will be shown here -->
+                        </div>
+                        ⚠️ <strong>提醒：</strong>根据劳动法，超过8小时的工作时间应支付加班费。
+                        <br>您的公司每年欠您 <strong id="yearlyOwed">¥0</strong> 的加班费。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        let config = {
+            dailyTarget: 11.5,
+            weeklyTarget: 57.5,
+            defaultStart: '10:00',
+            defaultEnd: '22:00',
+            monthlySalary: 0,
+            workMode: 'normal' // normal, alternate, sixdays
+        };
+
+        // Current week type for alternating weeks
+        let currentWeekType = 'big'; // big or small
+
+        // Week data - initially 5 days
+        let weekData = [
+            { day: '周一', start: '', end: '', nextDay: false, hours: 0 },
+            { day: '周二', start: '', end: '', nextDay: false, hours: 0 },
+            { day: '周三', start: '', end: '', nextDay: false, hours: 0 },
+            { day: '周四', start: '', end: '', nextDay: false, hours: 0 },
+            { day: '周五', start: '', end: '', nextDay: false, hours: 0 }
+        ];
+
+        // Load saved data
+        function loadData() {
+            const saved = localStorage.getItem('workHoursImproved');
+            if (saved) {
+                const data = JSON.parse(saved);
+                config = data.config || config;
+                weekData = data.weekData || weekData;
+                
+                document.getElementById('dailyTarget').value = config.dailyTarget;
+                document.getElementById('weeklyTarget').value = config.weeklyTarget;
+                document.getElementById('defaultStart').value = config.defaultStart;
+                document.getElementById('defaultEnd').value = config.defaultEnd;
+                
+                // Load monthly salary if saved
+                if (config.monthlySalary) {
+                    document.getElementById('monthlySalary').value = config.monthlySalary;
+                    const salaryInK = Math.round(config.monthlySalary / 1000);
+                    document.getElementById('salarySlider').value = salaryInK;
+                    document.getElementById('salaryValue').textContent = salaryInK + 'K';
+                }
+                
+                // Load work mode if saved
+                if (config.workMode) {
+                    document.getElementById('workMode').value = config.workMode;
+                }
+                
+                // Load annual bonus if saved
+                if (config.annualBonusMonths) {
+                    document.getElementById('annualBonus').value = config.annualBonusMonths;
+                    document.getElementById('bonusSlider').value = config.annualBonusMonths;
+                    document.getElementById('bonusValue').textContent = config.annualBonusMonths + '月';
+                }
+            }
+        }
+
+        // Save data
+        function saveData() {
+            localStorage.setItem('workHoursImproved', JSON.stringify({
+                config,
+                weekData,
+                lastUpdated: new Date().toISOString()
+            }));
+        }
+
+        // Update configuration
+        function updateConfig() {
+            config.dailyTarget = parseFloat(document.getElementById('dailyTarget').value) || 11.5;
+            config.weeklyTarget = parseFloat(document.getElementById('weeklyTarget').value) || 57.5;
+            config.defaultStart = document.getElementById('defaultStart').value || '10:00';
+            config.defaultEnd = document.getElementById('defaultEnd').value || '22:00';
+            config.workMode = document.getElementById('workMode').value || 'normal';
+            
+            // Update week data based on work mode
+            updateWeekDataForMode();
+            
+            saveData();
+            updateAll();
+        }
+        
+        // Update week data for different work modes
+        function updateWeekDataForMode() {
+            const currentLength = weekData.length;
+            
+            if (config.workMode === 'sixdays' || (config.workMode === 'alternate' && currentWeekType === 'big')) {
+                // Add Saturday if not exists
+                if (currentLength === 5) {
+                    weekData.push({ day: '周六', start: '', end: '', nextDay: false, hours: 0 });
+                }
+            } else {
+                // Remove Saturday if exists
+                if (currentLength === 6) {
+                    weekData = weekData.slice(0, 5);
+                }
+            }
+        }
+        
+        // Toggle week type for alternating weeks
+        function toggleWeekType() {
+            if (config.workMode === 'alternate') {
+                currentWeekType = currentWeekType === 'big' ? 'small' : 'big';
+                updateWeekDataForMode();
+                updateAll();
+            }
+        }
+
+        // Parse time string to minutes
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        // Convert minutes to time string
+        function minutesToTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+        }
+
+        // Calculate hours with next day support
+        function calculateHours(start, end, nextDay) {
+            if (!start || !end) return 0;
+            
+            let startMin = timeToMinutes(start);
+            let endMin = timeToMinutes(end);
+            
+            if (nextDay) {
+                endMin += 24 * 60; // Add 24 hours for next day
+            }
+            
+            if (endMin <= startMin) {
+                return 0;
+            }
+            
+            return Math.round((endMin - startMin) / 60 * 10) / 10;
+        }
+
+        // Adjust time by minutes
+        function adjustTime(timeStr, minutes) {
+            if (!timeStr) return '10:00';
+            let totalMinutes = timeToMinutes(timeStr) + minutes;
+            
+            // Keep within 0-23:59 range
+            while (totalMinutes < 0) totalMinutes += 24 * 60;
+            while (totalMinutes >= 24 * 60) totalMinutes -= 24 * 60;
+            
+            return minutesToTime(totalMinutes);
+        }
+
+        // Get status based on hours
+        function getStatus(hours, target) {
+            const percentage = (hours / target) * 100;
+            if (percentage >= 100) return 'success';
+            if (percentage >= 80) return 'warning';
+            return 'danger';
+        }
+
+        // Render days list
+        function renderDays() {
+            const daysList = document.getElementById('daysList');
+            daysList.innerHTML = '';
+            
+            weekData.forEach((data, index) => {
+                const status = data.hours > 0 ? getStatus(data.hours, config.dailyTarget) : '';
+                
+                const dayItem = document.createElement('div');
+                dayItem.className = `day-item ${status}`;
+                dayItem.style.position = 'relative';
+                
+                dayItem.innerHTML = `
+                    ${data.hours > 0 ? `<button class="day-clear-btn" onclick="clearDay(${index})" title="清空此天">×</button>` : ''}
+                    <div class="day-header">
+                        <span class="day-name">${data.day}</span>
+                        <span class="day-hours ${status}">${data.hours} 小时</span>
+                    </div>
+                    <div class="time-row">
+                        <div class="time-group">
+                            <span class="time-label">上班</span>
+                            <div class="time-input-wrapper">
+                                <input type="text" 
+                                       class="time-input" 
+                                       id="start-${index}"
+                                       value="${data.start}"
+                                       placeholder="10:00"
+                                       onchange="updateTime(${index}, 'start', this.value)">
+                                <div class="time-buttons">
+                                    <button class="time-btn" onclick="adjustTimeInput(${index}, 'start', 30)">+</button>
+                                    <button class="time-btn" onclick="adjustTimeInput(${index}, 'start', -30)">-</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="time-group">
+                            <span class="time-label">下班</span>
+                            <div class="time-input-wrapper">
+                                <input type="text" 
+                                       class="time-input" 
+                                       id="end-${index}"
+                                       value="${data.end}"
+                                       placeholder="22:00"
+                                       onchange="updateTime(${index}, 'end', this.value)">
+                                <div class="time-buttons">
+                                    <button class="time-btn" onclick="adjustTimeInput(${index}, 'end', 30)">+</button>
+                                    <button class="time-btn" onclick="adjustTimeInput(${index}, 'end', -30)">-</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="next-day-toggle ${data.nextDay ? 'active' : ''}" 
+                             onclick="toggleNextDay(${index})"
+                             title="下班时间为次日">
+                            <span>+1天</span>
+                        </div>
+                    </div>
+                `;
+                
+                daysList.appendChild(dayItem);
+            });
+        }
+
+        // Update time
+        function updateTime(dayIndex, field, value) {
+            // Validate and format time input
+            value = value.replace(/[^\d:]/g, '');
+            
+            if (value.includes(':')) {
+                const [h, m] = value.split(':');
+                const hours = Math.min(23, Math.max(0, parseInt(h) || 0));
+                const minutes = Math.min(59, Math.max(0, parseInt(m) || 0));
+                value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            } else if (value.length <= 2) {
+                const hours = Math.min(23, Math.max(0, parseInt(value) || 0));
+                value = `${hours.toString().padStart(2, '0')}:00`;
+            } else if (value.length === 4) {
+                const hours = Math.min(23, Math.max(0, parseInt(value.substr(0, 2)) || 0));
+                const minutes = Math.min(59, Math.max(0, parseInt(value.substr(2, 2)) || 0));
+                value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            }
+            
+            weekData[dayIndex][field] = value;
+            weekData[dayIndex].hours = calculateHours(
+                weekData[dayIndex].start,
+                weekData[dayIndex].end,
+                weekData[dayIndex].nextDay
+            );
+            
+            document.getElementById(`${field}-${dayIndex}`).value = value;
+            
+            saveData();
+            updateAll();
+        }
+
+        // Adjust time input by minutes
+        function adjustTimeInput(dayIndex, field, minutes) {
+            const currentValue = weekData[dayIndex][field] || (field === 'start' ? '10:00' : '22:00');
+            const newValue = adjustTime(currentValue, minutes);
+            updateTime(dayIndex, field, newValue);
+        }
+
+        // Toggle next day for end time
+        function toggleNextDay(dayIndex) {
+            weekData[dayIndex].nextDay = !weekData[dayIndex].nextDay;
+            weekData[dayIndex].hours = calculateHours(
+                weekData[dayIndex].start,
+                weekData[dayIndex].end,
+                weekData[dayIndex].nextDay
+            );
+            saveData();
+            updateAll();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = weekData.reduce((sum, day) => sum + day.hours, 0);
+            const remaining = Math.max(0, config.weeklyTarget - total);
+            const workedDays = weekData.filter(day => day.hours > 0).length;
+            const avgDaily = workedDays > 0 ? (total / workedDays).toFixed(1) : '0.0';
+            const progress = Math.min(100, Math.round((total / config.weeklyTarget) * 100));
+            
+            // Update values
+            const totalEl = document.getElementById('totalHours');
+            totalEl.textContent = total.toFixed(1);
+            totalEl.className = `stat-value ${getStatus(total, config.weeklyTarget)}`;
+            
+            const remainingEl = document.getElementById('remainingTotal');
+            remainingEl.textContent = remaining.toFixed(1);
+            remainingEl.className = `stat-value ${remaining > config.dailyTarget * 2 ? 'danger' : remaining > config.dailyTarget ? 'warning' : 'success'}`;
+            
+            document.getElementById('avgDaily').textContent = avgDaily;
+            document.getElementById('progressPercent').textContent = `${progress}%`;
+            
+            // Update progress bars
+            const totalProgress = document.getElementById('totalProgress');
+            totalProgress.style.width = `${progress}%`;
+            totalProgress.className = `stat-bar ${getStatus(total, config.weeklyTarget)}`;
+            
+            const remainingProgress = document.getElementById('remainingProgress');
+            remainingProgress.style.width = `${Math.max(0, 100 - progress)}%`;
+        }
+
+        // Update remaining days prediction
+        function updateRemainingDays() {
+            const total = weekData.reduce((sum, day) => sum + day.hours, 0);
+            const workedDays = weekData.filter(day => day.hours > 0).length;
+            const remainingDays = weekData.length - workedDays; // Count actual week days
+            const remainingHours = Math.max(0, config.weeklyTarget - total);
+            
+            // Hide panel if no remaining days
+            const remainingPanel = document.querySelector('.remaining-panel');
+            if (remainingDays === 0 || remainingHours === 0) {
+                remainingPanel.style.display = 'none';
+                return;
+            } else {
+                remainingPanel.style.display = 'block';
+            }
+            
+            // Update count
+            document.getElementById('remainingDaysCount').textContent = remainingDays;
+            
+            const listEl = document.getElementById('remainingDaysList');
+            listEl.innerHTML = '';
+            
+            if (remainingDays <= 0) {
+                listEl.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">本周工作日已全部完成</div>';
+                return;
+            }
+            
+            if (remainingHours <= 0) {
+                listEl.innerHTML = '<div style="text-align: center; color: var(--success); padding: 20px; font-weight: 600;">✅ 本周目标已达成！</div>';
+                return;
+            }
+            
+            const avgNeeded = remainingHours / remainingDays;
+            
+            weekData.forEach((day, index) => {
+                if (day.hours === 0) {
+                    const startTime = config.defaultStart;
+                    const startMin = timeToMinutes(startTime);
+                    const endMin = startMin + Math.round(avgNeeded * 60);
+                    const endTime = minutesToTime(endMin % (24 * 60));
+                    const isNextDay = endMin >= 24 * 60;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'remaining-day';
+                    item.innerHTML = `
+                        <span class="remaining-day-name">${day.day}</span>
+                        <div class="remaining-day-info">
+                            <div class="remaining-day-hours">${avgNeeded.toFixed(1)}h</div>
+                            <div class="remaining-day-time">
+                                ${startTime} - ${endTime}${isNextDay ? ' (+1)' : ''}
+                            </div>
+                        </div>
+                    `;
+                    listEl.appendChild(item);
+                }
+            });
+        }
+
+        // Fill defaults
+        function fillDefaults() {
+            weekData.forEach(day => {
+                if (!day.start && !day.end) {
+                    day.start = config.defaultStart;
+                    day.end = config.defaultEnd;
+                    day.nextDay = false;
+                    day.hours = calculateHours(day.start, day.end, day.nextDay);
+                }
+            });
+            saveData();
+            updateAll();
+        }
+
+        // Optimize remaining days
+        function optimizeRemaining() {
+            const total = weekData.reduce((sum, day) => sum + day.hours, 0);
+            const workedDays = weekData.filter(day => day.hours > 0).length;
+            const remainingDays = 5 - workedDays;
+            
+            if (remainingDays <= 0) return;
+            
+            const remainingHours = Math.max(0, config.weeklyTarget - total);
+            const avgNeeded = remainingHours / remainingDays;
+            
+            weekData.forEach(day => {
+                if (day.hours === 0) {
+                    day.start = config.defaultStart;
+                    const startMin = timeToMinutes(day.start);
+                    const endMin = startMin + Math.round(avgNeeded * 60);
+                    
+                    if (endMin >= 24 * 60) {
+                        day.end = minutesToTime(endMin % (24 * 60));
+                        day.nextDay = true;
+                    } else {
+                        day.end = minutesToTime(endMin);
+                        day.nextDay = false;
+                    }
+                    
+                    day.hours = calculateHours(day.start, day.end, day.nextDay);
+                }
+            });
+            
+            saveData();
+            updateAll();
+        }
+
+        // Clear all
+        function clearAll() {
+            if (confirm('确定要清空所有时间记录吗？')) {
+                weekData.forEach(day => {
+                    day.start = '';
+                    day.end = '';
+                    day.nextDay = false;
+                    day.hours = 0;
+                });
+                saveData();
+                updateAll();
+            }
+        }
+
+        // Clear specific day
+        function clearDay(dayIndex) {
+            weekData[dayIndex].start = '';
+            weekData[dayIndex].end = '';
+            weekData[dayIndex].nextDay = false;
+            weekData[dayIndex].hours = 0;
+            saveData();
+            updateAll();
+        }
+
+        // Export data
+        function exportData() {
+            const exportObj = {
+                config,
+                weekData,
+                statistics: {
+                    total: weekData.reduce((sum, day) => sum + day.hours, 0),
+                    average: weekData.filter(d => d.hours > 0).length > 0 
+                        ? (weekData.reduce((sum, day) => sum + day.hours, 0) / weekData.filter(d => d.hours > 0).length).toFixed(1)
+                        : 0,
+                    workedDays: weekData.filter(d => d.hours > 0).length
+                },
+                exportDate: new Date().toLocaleString('zh-CN')
+            };
+            
+            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `work-hours-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Import data
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // Import config if available
+                    if (data.config) {
+                        config = data.config;
+                        document.getElementById('dailyTarget').value = config.dailyTarget;
+                        document.getElementById('weeklyTarget').value = config.weeklyTarget;
+                        document.getElementById('defaultStart').value = config.defaultStart;
+                        document.getElementById('defaultEnd').value = config.defaultEnd;
+                    }
+                    
+                    // Import week data if available
+                    if (data.weekData && Array.isArray(data.weekData)) {
+                        weekData = data.weekData.map((day, index) => ({
+                            day: weekData[index].day,
+                            start: day.start || '',
+                            end: day.end || '',
+                            nextDay: day.nextDay || false,
+                            hours: day.hours || 0
+                        }));
+                    }
+                    
+                    saveData();
+                    updateAll();
+                    alert('数据导入成功！');
+                } catch (error) {
+                    alert('导入失败：文件格式不正确');
+                }
+                
+                // Reset file input
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        // Render chart
+        function renderChart() {
+            const container = document.getElementById('chartContainer');
+            container.innerHTML = '';
+            
+            const maxHours = Math.max(config.dailyTarget, ...weekData.map(d => d.hours));
+            const scale = 120 / (maxHours * 1.2); // Adjusted for new height
+            
+            weekData.forEach((day, index) => {
+                const group = document.createElement('div');
+                group.className = 'chart-bar-group';
+                
+                const bars = document.createElement('div');
+                bars.className = 'chart-bars';
+                
+                // Actual hours bar
+                const actualBar = document.createElement('div');
+                actualBar.className = 'chart-bar actual';
+                actualBar.style.height = `${day.hours * scale}px`;
+                actualBar.setAttribute('data-hours', `${day.hours}h`);
+                
+                // Target hours bar
+                const targetBar = document.createElement('div');
+                targetBar.className = 'chart-bar target';
+                targetBar.style.height = `${config.dailyTarget * scale}px`;
+                targetBar.setAttribute('data-hours', `目标 ${config.dailyTarget}h`);
+                
+                bars.appendChild(targetBar);
+                bars.appendChild(actualBar);
+                
+                const label = document.createElement('div');
+                label.className = 'chart-label';
+                label.textContent = day.day;
+                
+                group.appendChild(bars);
+                group.appendChild(label);
+                container.appendChild(group);
+            });
+        }
+
+        // Update salary from slider
+        function updateSalaryFromSlider() {
+            const sliderValue = parseFloat(document.getElementById('salarySlider').value);
+            const salaryInYuan = sliderValue * 1000; // Convert K to Yuan
+            
+            document.getElementById('salaryValue').textContent = sliderValue + 'K';
+            document.getElementById('monthlySalary').value = salaryInYuan;
+            
+            updateOvertimeStats();
+        }
+        
+        // Update bonus from slider
+        function updateBonusFromSlider() {
+            const sliderValue = parseFloat(document.getElementById('bonusSlider').value);
+            
+            document.getElementById('bonusValue').textContent = sliderValue + '月';
+            document.getElementById('annualBonus').value = sliderValue;
+            
+            updateOvertimeStats();
+        }
+        
+        // Set performance bonus quickly
+        function setPerformanceBonus(grade) {
+            const bonusMonths = {
+                'S': 8,
+                'A': 6,
+                'B': 4,
+                'C': 2
+            };
+            
+            const months = bonusMonths[grade];
+            if (months) {
+                document.getElementById('annualBonus').value = months;
+                document.getElementById('bonusSlider').value = months;
+                document.getElementById('bonusValue').textContent = months + '月';
+                updateOvertimeStats();
+            }
+        }
+        
+        // Calculate overtime statistics
+        function updateOvertimeStats() {
+            const monthlySalary = parseFloat(document.getElementById('monthlySalary').value) || 0;
+            const annualBonusMonths = parseFloat(document.getElementById('annualBonus').value) || 0;
+            
+            // Calculate weekly overtime - ALL work beyond 40 hours/week is overtime
+            let weeklyOvertimeHours = 0;
+            let totalWeekHours = 0;
+            let saturdayHours = 0;
+            
+            weekData.forEach((day, index) => {
+                if (day.hours > 0) {
+                    totalWeekHours += day.hours;
+                    
+                    // Saturday (index 5) is always overtime
+                    if (index === 5) {
+                        saturdayHours = day.hours;
+                        weeklyOvertimeHours += day.hours; // All Saturday hours are overtime
+                    } else {
+                        // Monday-Friday: hours over 8 are overtime
+                        if (day.hours > 8) {
+                            weeklyOvertimeHours += (day.hours - 8);
+                        }
+                    }
+                }
+            });
+            
+            // Standard working hours is ALWAYS 40 hours/week (8h × 5 days)
+            const standardDailyHours = 8;
+            const standardWeeklyHours = 40; // Legal standard
+            const workDaysPerWeek = 5; // Legal standard is 5 days
+            
+            const weeksPerMonth = 4.35; // Average weeks per month
+            const monthsPerYear = 12;
+            const workDaysPerMonth = 21.75; // Standard calculation for 5-day week
+            
+            // Calculate hourly rate
+            const hourlyRate = monthlySalary > 0 ? monthlySalary / (workDaysPerMonth * standardDailyHours) : 0;
+            const overtimeRate = hourlyRate * 1.5; // 1.5x for overtime
+            
+            // Calculate overtime money
+            const weeklyOvertimeMoney = weeklyOvertimeHours * overtimeRate;
+            const monthlyOvertimeHours = weeklyOvertimeHours * weeksPerMonth;
+            const monthlyOvertimeMoney = monthlyOvertimeHours * overtimeRate;
+            const yearlyOvertimeHours = weeklyOvertimeHours * 52; // 52 weeks per year
+            const yearlyOvertimeMoney = yearlyOvertimeHours * overtimeRate;
+            
+            // Calculate annual bonus
+            const annualBonusAmount = monthlySalary * annualBonusMonths;
+            
+            // Calculate how many months of salary the overtime is worth
+            const monthsOwed = monthlySalary > 0 ? yearlyOvertimeMoney / monthlySalary : 0;
+            
+            // Calculate net gain/loss
+            const netGain = annualBonusAmount - yearlyOvertimeMoney;
+            
+            // Update display
+            document.getElementById('weeklyOvertime').textContent = weeklyOvertimeHours.toFixed(1) + 'h';
+            document.getElementById('weeklyOvertimeMoney').textContent = '¥' + Math.round(weeklyOvertimeMoney).toLocaleString();
+            
+            document.getElementById('monthlyOvertime').textContent = monthlyOvertimeHours.toFixed(1) + 'h';
+            document.getElementById('monthlyOvertimeMoney').textContent = '¥' + Math.round(monthlyOvertimeMoney).toLocaleString();
+            
+            document.getElementById('yearlyOvertime').textContent = yearlyOvertimeHours.toFixed(1) + 'h';
+            document.getElementById('yearlyOvertimeMoney').textContent = '¥' + Math.round(yearlyOvertimeMoney).toLocaleString();
+            
+            // Update breakdown
+            document.getElementById('standardHours').textContent = (standardDailyHours * workDaysPerWeek) + 'h';
+            document.getElementById('actualHours').textContent = totalWeekHours.toFixed(1) + 'h';
+            document.getElementById('overtimeHours').textContent = weeklyOvertimeHours.toFixed(1) + 'h';
+            document.getElementById('hourlyRate').textContent = '¥' + Math.round(hourlyRate) + '/h';
+            document.getElementById('overtimeRate').textContent = '¥' + Math.round(overtimeRate) + '/h';
+            
+            // Update bonus comparison
+            document.getElementById('bonusAmount').textContent = '¥' + Math.round(annualBonusAmount).toLocaleString();
+            document.getElementById('yearlyOwedAmount').textContent = '¥' + Math.round(yearlyOvertimeMoney).toLocaleString();
+            document.getElementById('monthsOwed').textContent = monthsOwed.toFixed(1) + ' 个月';
+            
+            const netGainEl = document.getElementById('netGain');
+            netGainEl.textContent = (netGain >= 0 ? '+' : '') + '¥' + Math.round(netGain).toLocaleString();
+            netGainEl.style.color = netGain >= 0 ? '#10b981' : '#fbbf24';
+            
+            // Update result message
+            const resultEl = document.getElementById('overtimeResult');
+            if (yearlyOvertimeMoney > 0 && monthlySalary > 0) {
+                if (netGain > 0) {
+                    resultEl.innerHTML = `✅ 年终奖覆盖了加班费，净赚 ${Math.round(netGain).toLocaleString()} 元`;
+                    resultEl.style.color = '#10b981';
+                } else if (netGain < 0) {
+                    resultEl.innerHTML = `❌ 年终奖不足以弥补加班，亏损 ${Math.round(Math.abs(netGain)).toLocaleString()} 元`;
+                    resultEl.style.color = '#fbbf24';
+                } else {
+                    resultEl.innerHTML = `⚖️ 年终奖刚好抵消加班费`;
+                    resultEl.style.color = 'white';
+                }
+            } else {
+                resultEl.innerHTML = '';
+            }
+            
+            // Update yearly owed amount
+            document.getElementById('yearlyOwed').textContent = '¥' + Math.round(yearlyOvertimeMoney).toLocaleString();
+            
+            // Save to config
+            if (monthlySalary > 0) {
+                config.monthlySalary = monthlySalary;
+                config.annualBonusMonths = annualBonusMonths;
+                saveData();
+            }
+        }
+
+        // Update all views
+        function updateAll() {
+            // Show/hide week type toggle for alternating weeks
+            const weekTypeToggle = document.getElementById('weekTypeToggle');
+            const weekTypeText = document.getElementById('weekTypeText');
+            if (config.workMode === 'alternate') {
+                weekTypeToggle.style.display = 'block';
+                weekTypeText.textContent = currentWeekType === 'big' ? '大周(6天)' : '小周(5天)';
+            } else {
+                weekTypeToggle.style.display = 'none';
+            }
+            
+            renderDays();
+            updateStats();
+            updateRemainingDays();
+            renderChart();
+            updateTodayModule();
+            updateOvertimeStats();
+        }
+
+        // Today's module
+        function updateTodayModule() {
+            const now = new Date();
+            const dayIndex = now.getDay() - 1; // 0 = Monday
+            
+            const todayModule = document.getElementById('todayModule');
+            
+            if (dayIndex < 0 || dayIndex > 4) {
+                // Weekend
+                todayModule.style.display = 'none';
+                return;
+            }
+            
+            const todayData = weekData[dayIndex];
+            if (!todayData.start) {
+                todayModule.style.display = 'none';
+                return;
+            }
+            
+            // Show module
+            todayModule.style.display = 'flex';
+            
+            // Update current time
+            const currentTimeStr = now.toTimeString().slice(0, 5);
+            document.getElementById('currentTime').textContent = currentTimeStr;
+            
+            // Calculate target end time
+            const [startH, startM] = todayData.start.split(':').map(Number);
+            const targetEndMinutes = (startH * 60 + startM) + (config.dailyTarget * 60);
+            const targetEndH = Math.floor(targetEndMinutes / 60) % 24;
+            const targetEndM = targetEndMinutes % 60;
+            
+            const targetEndTime = new Date();
+            targetEndTime.setHours(targetEndH, targetEndM, 0);
+            
+            // If target time is next day
+            if (targetEndMinutes >= 24 * 60) {
+                targetEndTime.setDate(targetEndTime.getDate() + 1);
+            }
+            
+            // Update expected end time
+            document.getElementById('expectedEndTime').textContent = 
+                `${targetEndH.toString().padStart(2, '0')}:${targetEndM.toString().padStart(2, '0')}${targetEndMinutes >= 24 * 60 ? ' (+1)' : ''}`;
+            
+            // Calculate progress
+            const startTime = new Date();
+            startTime.setHours(startH, startM, 0);
+            
+            const totalWorkMinutes = config.dailyTarget * 60;
+            const workedMinutes = Math.max(0, (now - startTime) / (1000 * 60));
+            const progress = Math.min(100, (workedMinutes / totalWorkMinutes) * 100);
+            
+            document.getElementById('todayPercent').textContent = `${Math.round(progress)}%`;
+            document.getElementById('todayProgressBar').style.width = `${progress}%`;
+            
+            // Update countdown
+            const diff = targetEndTime - now;
+            if (diff > 0) {
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                document.getElementById('countdownHours').textContent = hours.toString().padStart(2, '0');
+                document.getElementById('countdownMinutes').textContent = minutes.toString().padStart(2, '0');
+            } else {
+                document.getElementById('countdownHours').textContent = '00';
+                document.getElementById('countdownMinutes').textContent = '00';
+                document.getElementById('todayPercent').textContent = '100%';
+                document.getElementById('todayProgressBar').style.width = '100%';
+            }
+        }
+
+        // Initialize
+        loadData();
+        updateAll();
+
+        // Update countdown every minute
+        setInterval(updateTodayModule, 60000);
+
+        // Auto-save
+        window.addEventListener('beforeunload', saveData);
+    </script>
+</body>
+</html>
