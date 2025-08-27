@@ -3,6 +3,7 @@ https://hanxu2018.github.io/workTime/
 
 
 轻松记录与分析你的工作时间，助力高效管理和科学加班！
+![预览图片](image.png)
 
 ## 项目简介
 
