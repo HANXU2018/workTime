@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工时管理系统 - 优化版</title>
+    <title>工时计算器</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -943,7 +943,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- Today Module -->
+        
         <div class="today-module" id="todayModule" style="display: none;">
             <div class="today-info">
                 <div class="today-title">今日工作状态</div>
@@ -973,7 +973,7 @@
         <!-- Header with Config -->
         <div class="header">
             <div class="header-content">
-                <h1 class="title">⏱ 工时管理系统</h1>
+                <h1 class="title">⏱ 工时计算器</h1>
                 <div class="config-row">
                     <div class="config-item">
                         <label class="config-label">日目标</label>
@@ -1005,7 +1005,7 @@
             </div>
         </div>
 
-        <!-- Statistics Row -->
+        
         <div class="stats-row">
             <div class="stat-card">
                 <div class="stat-value" id="totalHours">0</div>
@@ -1031,7 +1031,7 @@
             </div>
         </div>
 
-        <!-- Main Content -->
+        
         <div class="main-grid">
             <!-- Left Panel Container -->
             <div>
@@ -1044,7 +1044,7 @@
                         </button>
                     </div>
                     <div class="days-list" id="daysList">
-                        <!-- Days will be generated here -->
+                        
                     </div>
                     <div class="actions">
                         <button class="btn btn-primary" onclick="fillDefaults()">
@@ -1068,13 +1068,13 @@
                     </div>
                 </div>
 
-                <!-- Chart Panel (moved here) -->
+                
                 <div class="chart-panel" style="margin-top: 20px;">
                     <h2 class="chart-header">
                         <span>📈</span> 工时对比图
                     </h2>
                     <div class="chart-container" id="chartContainer">
-                        <!-- Chart will be generated here -->
+                        
                     </div>
                     <div class="chart-legend">
                         <div class="legend-item">
@@ -1091,7 +1091,7 @@
 
             <!-- Right Panel Container -->
             <div class="right-panels">
-                <!-- Remaining Days Panel -->
+                
                 <div class="remaining-panel">
                     <h2 class="remaining-header">
                         <span>📊</span> 剩余工作日预测
@@ -1101,14 +1101,14 @@
                         <div class="remaining-text">剩余工作日</div>
                     </div>
                     <div class="remaining-days-list" id="remainingDaysList">
-                        <!-- Remaining days will be generated here -->
+                        
                     </div>
                 </div>
 
                 <!-- Overtime Panel -->
                 <div class="overtime-panel">
                     <h2 class="overtime-header">
-                        <span>💸</span> 加班统计 - 公司白嫖薪资
+                        <span>💸</span> 加班统计 - 公司节省工资
                     </h2>
                     
                     <div class="salary-input-section">
@@ -1409,13 +1409,15 @@
                 dayItem.innerHTML = `
                     ${data.hours > 0 ? `<button class="day-clear-btn" onclick="clearDay(${index})" title="清空此天">×</button>` : ''}
                     <div class="day-header">
-                        <span class="day-name">${data.day}</span>
-                        <span class="day-hours ${status}">${data.hours} 小时</span>
+                        <span class="day-name">${data.day}span>
+                        <span class="day-hours ${status}">${data.hours} 小时span>
                     </div>
                     <div class="time-row">
                         <div class="time-group">
-                            <span class="time-label">上班</span>
-                            <div class="time-input-wrapper">
+                            <span class="time-label">上班span>
+                            
+input-wrapper">
+
                                 <input type="text" 
                                        class="time-input" 
                                        id="start-${index}"
@@ -1429,8 +1431,10 @@
                             </div>
                         </div>
                         <div class="time-group">
-                            <span class="time-label">下班</span>
-                            <div class="time-input-wrapper">
+                            <span class="time-label">下班span>
+                            
+input-wrapper">
+
                                 <input type="text" 
                                        class="time-input" 
                                        id="end-${index}"
@@ -1446,7 +1450,7 @@
                         <div class="next-day-toggle ${data.nextDay ? 'active' : ''}" 
                              onclick="toggleNextDay(${index})"
                              title="下班时间为次日">
-                            <span>+1天</span>
+                            <span>+1天span>
                         </div>
                     </div>
                 `;
